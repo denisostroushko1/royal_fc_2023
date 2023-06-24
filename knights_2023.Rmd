@@ -488,7 +488,7 @@ Row {data-width=250}
 ### Goals and Assist Details 
 
 ```{r}
-custom_page_1_font = 14
+custom_page_1_font = 13
 ```
 
 ```{r }
