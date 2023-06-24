@@ -28,7 +28,16 @@ library(ggsoccer)
 library(googleAuthR)
 library(googlesheets4)
 library(kableExtra)
+library(shinydashboard)
+library(scales)
 
+```
+
+```{r}
+int_breaks <- function(x, n = 5) {
+  l <- pretty(x, n)
+  l[abs(l %% 1) < .Machine$double.eps ^ 0.5] 
+}
 ```
 
 ```{r laod goals and assists data}
@@ -92,13 +101,15 @@ schedule$opponent =
 <!--------------------------------------------------------------------------------------
                                             DASHBOARD BODY
 ------------------------------------------------------------------------------------> 
-Team Performance
+Team Performance {.tabset }
 ===
 
-Row
+Row {data-height=1600}
 ---
 
-```{r}
+### Goal Differential Over Time {data-width=1000}
+
+```{r differential over timeline }
 
 schedule %>% 
   mutate(
@@ -124,11 +135,12 @@ schedule %>%
 
 plot_df %>% 
   plot_ly(
-    x = ~game, 
-    y = ~Val, 
-    color = ~Type, 
+    x = ~game,
+    y = ~Val,
+    color = ~Type,
+    colors = c("red", "#36c959"),
     
-    type = "scatter", 
+    type = "scatter",
     mode = "lines+markers", 
     
     text = 
@@ -145,15 +157,67 @@ plot_df %>%
   ) %>% 
   layout(
     yaxis = list(
-      range = c(0, max(cumsum(schedule$our_goals)) + 1)
-    )
+      range = c(0, max(cumsum(schedule$our_goals)) + 1), 
+      title = "Goals For and Against"
+    ), 
+    xaxis = list(
+      title = "Game #"
+    ), 
+    legend = list(
+      orientation = "h", y = -.2
+      )
     )
 
 
 ```
 
-Row
+### Differential Distribution {data-width=1000}
+
+```{r}
+
+schedule %>% 
+  mutate(
+    differential = our_goals - our_conceded
+  ) -> schedule
+
+schedule %>% 
+  ggplot(aes(x = differential)) + 
+  geom_histogram(
+    binwidth = 1, 
+    color = "grey", 
+    fill = "blue"
+    ) + 
+  
+  scale_x_continuous(
+    labels = seq(from = min(schedule$differential), 
+                 to =  max(schedule$differential), 
+                 by = 1),
+    
+    breaks = seq(from = min(schedule$differential), 
+                 to =  max(schedule$differential), 
+                 by = 1)
+  ) + 
+  
+  scale_y_continuous(
+    breaks = function(x) int_breaks(x, n = 10)
+  ) + 
+  
+  theme_minimal() + 
+  
+  xlab("Goal Differential") + 
+  ylab("Count") + 
+  
+  ggtitle(
+    paste("Average per Game:", 
+          round(mean(schedule$differential), 4))
+  )
+
+```
+
+Row {data-height=1600}
 ---
+
+### Assists Origin 
 
 ```{r}
 scores %>% 
@@ -203,6 +267,8 @@ ggplot(data = assists,
     colour = "blue" # Also accepts "red", "blue' etc
   )
 ```
+
+### Assists Origin 
 
 ```{r}
 scores %>% 
@@ -281,6 +347,8 @@ ggplot(data = assists2,
   )
 ```
 
+### Assist Types
+
 ```{r}
 
 scores %>% 
@@ -317,6 +385,8 @@ shot_sum %>%
 
 Row
 ---
+
+### Goals Origin 
 
 ```{r}
 
@@ -396,7 +466,7 @@ ggplot(data = goals,
   )
 ```
 
-
+### Goal Types
 
 ```{r}
 
@@ -434,12 +504,33 @@ shot_sum %>%
 ```
 
 
+### Field Type Effect
+
+```{r}
+
+schedule %>% 
+  group_by(
+    Venue
+  ) %>% 
+  summarise(
+    Games = n(), 
+    For = sum(our_goals), 
+    Against = sum(our_conceded)
+  ) %>% 
+  
+  kable(align = c('l', 'c', 'c', 'c')) %>% 
+  kable_styling(
+    bootstrap_options = c("condensed", "striped")
+  )
+
+```
 
 Individual Performance
 ===
 
 Row
 ---
+
 ```{r}
 
 scores %>% 
@@ -449,7 +540,6 @@ scores %>%
   arrange(-Assists) -> ast
 
 ```
-
 
 ```{r}
 
@@ -475,8 +565,6 @@ all_ %>%
   kable(align = 'c') %>% 
   kable_styling(bootstrap_options = c("striped", "condensed"))
 ```
-Other
-===
 
 Row
 ---
@@ -516,7 +604,9 @@ linkups %>%
   arrange(-total_assist , Assister) -> advanced_assist_tally
 
 advanced_assist_tally
+```
 
+```{r}
 
 advanced_assist_tally %>% 
   rowwise() %>%
@@ -525,38 +615,21 @@ advanced_assist_tally %>%
   summarise(total = sum(person_assists)) %>% 
   arrange(-total)  
 
-
 ```
-
-
 
 ```{R}
 
 assistless <- 
-  linkups %>% filter(is.na(Assister) & `Play Type` == "Open Play") %>% 
+  linkups %>% filter(is.na(Assister) ) %>% 
   group_by(
     Scorer
   ) %>% 
   summarize(n = n()) %>% 
   arrange(-n)
   
+assistless
 ```
 
-
-
-```{r}
-
-schedule %>% 
-  group_by(
-    Venue
-  ) %>% 
-  summarise(
-    Games = n(), 
-    For = sum(our_goals), 
-    Against = sum(our_conceded)
-  )
-
-```
 
 
 
