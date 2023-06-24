@@ -1,0 +1,12 @@
+.value-box .value {
+    color: white;
+}
+
+.value-box .caption {
+    color: white;
+}
+
+#my-table {
+  height: auto !important;
+  max-height: none !important;
+}

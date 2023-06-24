@@ -2,9 +2,10 @@
 title: "MRSL D2 Knights 2023"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: rows
+    orientation: columns
     social: menu
-    source_code: embed
+    vertical_layout: fill
+    css: special_style.css
 ---
 
 <!--------------------------------------------------------------------------------------
@@ -30,6 +31,7 @@ library(googlesheets4)
 library(kableExtra)
 library(shinydashboard)
 library(scales)
+library(fontawesome)
 
 ```
 
@@ -101,13 +103,277 @@ schedule$opponent =
 <!--------------------------------------------------------------------------------------
                                             DASHBOARD BODY
 ------------------------------------------------------------------------------------> 
-Team Performance {.tabset }
+
+Team Performance 
 ===
 
-Row {data-height=1600}
+Column {data-width=200}
 ---
 
-### Goal Differential Over Time {data-width=1000}
+<!-- 
+VALUE BOXES 
+--> 
+
+### Box
+
+```{R}
+
+Goals <- scores %>% filter(Action == "Goal") %>% nrow()
+Games <- schedule %>% filter(Division == "D2") %>% nrow()
+
+val <- 
+  round(Goals / Games , 2)
+
+cap <- paste0("Scored Goals Per Game <br/>", Goals, " goals in ", Games, " games")
+
+flexdashboard::valueBox(value = val, caption = cap, color = "green", icon = "fa-bullseye")
+```
+
+### Box
+
+```{R}
+
+val <- scores %>% filter(Action == "Goal") %>% select(Player) %>% unique() %>% nrow()
+
+cap <- paste0("Players with 1+ Goals")
+
+flexdashboard::valueBox(value = val, caption = cap, color = "blue", icon = 'fa-thumbs-up')
+```
+
+### Box
+
+```{R}
+
+Goals <- schedule %>% filter(Division == "D2") %>% summarize(sum(our_conceded)) %>% unlist()
+Games <- schedule %>% filter(Division == "D2") %>% nrow()
+
+val <- 
+  round(Goals / Games , 2)
+
+cap <- paste0("Allowed Goals Per Game <br/>", Goals, " goals in ", Games, " games")
+
+flexdashboard::valueBox(value = val, caption = cap, color = "red", icon = 'fa-hand-paper')
+```
+
+Column {data-width=450 }
+---
+
+### Goals Origin By Position
+
+```{r ,fig.width=10}
+
+scores %>% 
+  filter(Action == "Goal") %>% 
+  group_by(`Group`) %>% 
+  summarize(n = n(), 
+            p = n()/nrow(.)) -> 
+  
+  goals
+
+goals <- goals %>% arrange(`Group`)
+
+goals$y_lab = c(50,75)
+goals$x_lab = c(50,85)
+
+goals$label = with(goals, paste0(n, " (", round(p, 4)*100, "%)"
+                                     )
+                     )
+
+
+ggplot(data = goals, 
+       aes(x = x_lab, y = y_lab, label = label)) +
+  annotate_pitch(colour = "#999e9b") +
+  theme_pitch(aspect_ratio = NULL) + 
+  geom_point(color = "white") + 
+  geom_text(size=12) + 
+  
+  geom_segment(
+    x = 67, xend = 67, 
+    y = 10, yend = 90,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "round",
+    linetype = "dashed", 
+    size = 2, 
+    colour = "red" # Also accepts "red", "blue' etc
+  )+ 
+  
+  geom_segment(
+    x = 31, xend = 31, 
+    y = 10, yend = 90,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "round",
+    linetype = "dashed", 
+    size = 2, 
+    colour = "red" # Also accepts "red", "blue' etc
+  ) + 
+  
+  geom_segment(
+    x = 15, xend = 25, 
+    y = 85, yend = 85,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "round",
+    size = 1, 
+    arrow = arrow(length = unit(0.1, "inches")),
+    colour = "#7fb550" # Also accepts "red", "blue' etc
+  ) + 
+  
+  geom_segment(
+    x = 45, xend = 55, 
+    y = 85, yend = 85,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "round",
+    size = 1, 
+    arrow = arrow(length = unit(0.1, "inches")),
+    colour = "#7fb550" # Also accepts "red", "blue' etc
+  )+ 
+  
+  geom_segment(
+    x = 75, xend = 85, 
+    y = 85, yend = 85,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "round",
+    size = 1, 
+    arrow = arrow(length = unit(0.1, "inches")),
+    colour = "#7fb550" # Also accepts "red", "blue' etc
+  ) + 
+  
+  theme(text = element_text(size = 20))
+```
+
+### Assists origin By Position
+
+```{r,fig.width=10}
+scores %>% 
+  filter(Action == "Assist") %>% 
+  group_by(`Group`) %>% 
+  summarize(n = n(), 
+            p = n()/nrow(.)) -> 
+  
+  assists2
+
+assists2 <- assists2 %>% arrange(`Group`)
+
+assists2$y_lab = c(25,50,75)
+assists2$x_lab = c(15,50,85)
+
+assists2$label = with(assists2, paste0(n, " (", round(p, 4)*100, "%)"
+                                     )
+                     )
+
+
+ggplot(data = assists2, 
+       aes(x = x_lab, y = y_lab, label = label)) +
+  annotate_pitch(colour = "#999e9b") +
+  theme_pitch(aspect_ratio = NULL) + 
+  geom_point(color = "white") + 
+  geom_text(size=12) + 
+  
+  geom_segment(
+    x = 67, xend = 67, 
+    y = 10, yend = 90,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "round",
+    linetype = "dashed", 
+    size = 2, 
+    colour = "red" # Also accepts "red", "blue' etc
+  )+ 
+  
+  geom_segment(
+    x = 31, xend = 31, 
+    y = 10, yend = 90,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "round",
+    linetype = "dashed", 
+    size = 2, 
+    colour = "red" # Also accepts "red", "blue' etc
+  ) + 
+  
+  geom_segment(
+    x = 15, xend = 25, 
+    y = 85, yend = 85,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "round",
+    size = 1, 
+    arrow = arrow(length = unit(0.1, "inches")),
+    colour = "#7fb550" # Also accepts "red", "blue' etc
+  ) + 
+  
+  geom_segment(
+    x = 45, xend = 55, 
+    y = 85, yend = 85,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "round",
+    size = 1, 
+    arrow = arrow(length = unit(0.1, "inches")),
+    colour = "#7fb550" # Also accepts "red", "blue' etc
+  )+ 
+  
+  geom_segment(
+    x = 75, xend = 85, 
+    y = 85, yend = 85,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "round",
+    size = 1, 
+    arrow = arrow(length = unit(0.1, "inches")),
+    colour = "#7fb550" # Also accepts "red", "blue' etc
+  )
+```
+
+### Assists Origin By Direction
+
+```{r,fig.width=10}
+scores %>% 
+  filter(Action == "Assist") %>% 
+  group_by(`Field Part`) %>% 
+  summarize(n = n(), 
+            p = n()/nrow(.)) -> 
+  
+  assists
+
+assists <- assists %>% arrange(`Field Part`)
+
+assists$y_lab = c(85,50,15)
+assists$x_lab = c(75,75,75)
+
+assists$label = with(assists, paste0(n, " (", round(p, 4)*100, "%)"
+                                     )
+                     )
+
+
+ggplot(data = assists, 
+       aes(x = x_lab, y = y_lab, label = label)) +
+  annotate_pitch(colour = "#999e9b") +
+  theme_pitch(aspect_ratio = NULL) + 
+  geom_point(color = "white") + 
+  geom_text(size=12) + 
+  
+  geom_segment(
+    x = 30, xend = 89, 
+    y = 67, yend = 67,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "round",
+    linetype = "dashed", 
+    size = 2, 
+    arrow = arrow(length = unit(0.3, "inches")),
+    colour = "blue" # Also accepts "red", "blue' etc
+  )+ 
+  
+  geom_segment(
+    x = 30, xend = 89, 
+    y = 33, yend = 33,
+    lineend = "round", # See available arrow types in example above
+    linejoin = "round",
+    linetype = "dashed", 
+    size = 2, 
+    arrow = arrow(length = unit(0.3, "inches")),
+    colour = "blue" # Also accepts "red", "blue' etc
+  )
+```
+
+Column {data-width=400}
+---
+
+### Goal Differential Through the Season
 
 ```{r differential over timeline }
 
@@ -164,16 +430,16 @@ plot_df %>%
       title = "Game #"
     ), 
     legend = list(
-      orientation = "h", y = -.2
+      orientation = "h", y = -.5
       )
     )
 
 
 ```
 
-### Differential Distribution {data-width=1000}
+### Goal Differential Distribution By Game
 
-```{r}
+```{r , fig.width=8, fig.height=7}
 
 schedule %>% 
   mutate(
@@ -208,267 +474,24 @@ schedule %>%
   ylab("Count") + 
   
   ggtitle(
-    paste("Average per Game:", 
+    paste0("Average per Game: +", 
           round(mean(schedule$differential), 4))
-  )
-
-```
-
-Row {data-height=1600}
----
-
-### Assists Origin 
-
-```{r}
-scores %>% 
-  filter(Action == "Assist") %>% 
-  group_by(`Field Part`) %>% 
-  summarize(n = n(), 
-            p = n()/nrow(.)) -> 
-  
-  assists
-
-assists <- assists %>% arrange(`Field Part`)
-
-assists$y_lab = c(85,50,15)
-assists$x_lab = c(75,75,75)
-
-assists$label = with(assists, paste0(n, " (", round(p, 4)*100, "%)"
-                                     )
-                     )
-
-
-ggplot(data = assists, 
-       aes(x = x_lab, y = y_lab, label = label)) +
-  annotate_pitch(colour = "#999e9b") +
-  theme_pitch(aspect_ratio = NULL) + 
-  geom_point(color = "white") + 
-  geom_text(size=7.5) + 
-  
-  geom_segment(
-    x = 30, xend = 89, 
-    y = 67, yend = 67,
-    lineend = "round", # See available arrow types in example above
-    linejoin = "round",
-    linetype = "dashed", 
-    size = 2, 
-    arrow = arrow(length = unit(0.3, "inches")),
-    colour = "blue" # Also accepts "red", "blue' etc
-  )+ 
-  
-  geom_segment(
-    x = 30, xend = 89, 
-    y = 33, yend = 33,
-    lineend = "round", # See available arrow types in example above
-    linejoin = "round",
-    linetype = "dashed", 
-    size = 2, 
-    arrow = arrow(length = unit(0.3, "inches")),
-    colour = "blue" # Also accepts "red", "blue' etc
-  )
-```
-
-### Assists Origin 
-
-```{r}
-scores %>% 
-  filter(Action == "Assist") %>% 
-  group_by(`Group`) %>% 
-  summarize(n = n(), 
-            p = n()/nrow(.)) -> 
-  
-  assists2
-
-assists2 <- assists2 %>% arrange(`Group`)
-
-assists2$y_lab = c(25,50,75)
-assists2$x_lab = c(15,50,85)
-
-assists2$label = with(assists2, paste0(n, " (", round(p, 4)*100, "%)"
-                                     )
-                     )
-
-
-ggplot(data = assists2, 
-       aes(x = x_lab, y = y_lab, label = label)) +
-  annotate_pitch(colour = "#999e9b") +
-  theme_pitch(aspect_ratio = NULL) + 
-  geom_point(color = "white") + 
-  geom_text(size=7.5) + 
-  
-  geom_segment(
-    x = 67, xend = 67, 
-    y = 10, yend = 90,
-    lineend = "round", # See available arrow types in example above
-    linejoin = "round",
-    linetype = "dashed", 
-    size = 2, 
-    colour = "red" # Also accepts "red", "blue' etc
-  )+ 
-  
-  geom_segment(
-    x = 31, xend = 31, 
-    y = 10, yend = 90,
-    lineend = "round", # See available arrow types in example above
-    linejoin = "round",
-    linetype = "dashed", 
-    size = 2, 
-    colour = "red" # Also accepts "red", "blue' etc
   ) + 
   
-  geom_segment(
-    x = 15, xend = 25, 
-    y = 85, yend = 85,
-    lineend = "round", # See available arrow types in example above
-    linejoin = "round",
-    size = 1, 
-    arrow = arrow(length = unit(0.1, "inches")),
-    colour = "#7fb550" # Also accepts "red", "blue' etc
-  ) + 
-  
-  geom_segment(
-    x = 45, xend = 55, 
-    y = 85, yend = 85,
-    lineend = "round", # See available arrow types in example above
-    linejoin = "round",
-    size = 1, 
-    arrow = arrow(length = unit(0.1, "inches")),
-    colour = "#7fb550" # Also accepts "red", "blue' etc
-  )+ 
-  
-  geom_segment(
-    x = 75, xend = 85, 
-    y = 85, yend = 85,
-    lineend = "round", # See available arrow types in example above
-    linejoin = "round",
-    size = 1, 
-    arrow = arrow(length = unit(0.1, "inches")),
-    colour = "#7fb550" # Also accepts "red", "blue' etc
-  )
-```
-
-### Assist Types
-
-```{r}
-
-scores %>% 
-  filter(Action == "Assist") %>% 
-  group_by(`Pass Type`) %>% 
-  summarise(n = n()) %>% 
-  arrange(-n) %>% 
-  rename(
-    Type = `Pass Type`
-  ) -> pass_types
-
-n_shot_types <- nrow(pass_types)
-
-scores %>% 
-  filter(Action == "Assist") %>% 
-  group_by(`Position`) %>% 
-  summarise(n = n()) %>% 
-  arrange(-n) %>% 
-  rename(
-    Type = `Position`
-  ) -> pass_loc
-
-n_shot_loc <- nrow(pass_loc)
-
-shot_sum <- rbind(pass_types, pass_loc)
-
-shot_sum %>% 
-  kable(align = 'l') %>% 
-  kable_styling(bootstrap_options = c("condesed", "striped")) %>% 
-  pack_rows("Assist Types", 1, n_shot_types) %>%
-  pack_rows("Assist Locations", (n_shot_types+1), (n_shot_loc + n_shot_types))
+  theme(text = element_text(size = 20))
 
 ```
 
-Row
----
+Row {data-width=250}
+-------------------------------------
 
-### Goals Origin 
+### Goals and Assist Details 
 
 ```{r}
-
-scores %>% 
-  filter(Action == "Goal") %>% 
-  group_by(`Group`) %>% 
-  summarize(n = n(), 
-            p = n()/nrow(.)) -> 
-  
-  goals
-
-goals <- goals %>% arrange(`Group`)
-
-goals$y_lab = c(50,75)
-goals$x_lab = c(50,85)
-
-goals$label = with(goals, paste0(n, " (", round(p, 4)*100, "%)"
-                                     )
-                     )
-
-
-ggplot(data = goals, 
-       aes(x = x_lab, y = y_lab, label = label)) +
-  annotate_pitch(colour = "#999e9b") +
-  theme_pitch(aspect_ratio = NULL) + 
-  geom_point(color = "white") + 
-  geom_text(size=7.5) + 
-  
-  geom_segment(
-    x = 67, xend = 67, 
-    y = 10, yend = 90,
-    lineend = "round", # See available arrow types in example above
-    linejoin = "round",
-    linetype = "dashed", 
-    size = 2, 
-    colour = "red" # Also accepts "red", "blue' etc
-  )+ 
-  
-  geom_segment(
-    x = 31, xend = 31, 
-    y = 10, yend = 90,
-    lineend = "round", # See available arrow types in example above
-    linejoin = "round",
-    linetype = "dashed", 
-    size = 2, 
-    colour = "red" # Also accepts "red", "blue' etc
-  ) + 
-  
-  geom_segment(
-    x = 15, xend = 25, 
-    y = 85, yend = 85,
-    lineend = "round", # See available arrow types in example above
-    linejoin = "round",
-    size = 1, 
-    arrow = arrow(length = unit(0.1, "inches")),
-    colour = "#7fb550" # Also accepts "red", "blue' etc
-  ) + 
-  
-  geom_segment(
-    x = 45, xend = 55, 
-    y = 85, yend = 85,
-    lineend = "round", # See available arrow types in example above
-    linejoin = "round",
-    size = 1, 
-    arrow = arrow(length = unit(0.1, "inches")),
-    colour = "#7fb550" # Also accepts "red", "blue' etc
-  )+ 
-  
-  geom_segment(
-    x = 75, xend = 85, 
-    y = 85, yend = 85,
-    lineend = "round", # See available arrow types in example above
-    linejoin = "round",
-    size = 1, 
-    arrow = arrow(length = unit(0.1, "inches")),
-    colour = "#7fb550" # Also accepts "red", "blue' etc
-  )
+custom_page_1_font = 14
 ```
 
-### Goal Types
-
-```{r}
+```{r }
 
 scores %>% 
   filter(Action == "Goal") %>% 
@@ -477,7 +500,8 @@ scores %>%
   arrange(-n) %>% 
   rename(
     Type = `Shot Type`
-  ) -> shot_types
+  ) %>% 
+  mutate(id = seq(from = 1, to = nrow(.), by = 1)) -> shot_types
 
 n_shot_types <- nrow(shot_types)
 
@@ -488,48 +512,81 @@ scores %>%
   arrange(-n) %>% 
   rename(
     Type = `Position`
-  ) -> shot_loc
+  ) %>% 
+  mutate(id = seq(from = 1, to = nrow(.), by = 1)) -> shot_loc
 
 n_shot_loc <- nrow(shot_loc)
 
-shot_sum <- rbind(shot_types, shot_loc)
+shot_sum <- merge(shot_types, shot_loc, by = "id", all = T) %>% select(-id)
+
+shot_sum <- 
+  shot_sum %>% 
+  mutate_all(as.character)
+
+shot_sum <- 
+  shot_sum %>% 
+    mutate_all(~replace(., is.na(.), ""))
 
 shot_sum %>% 
-  kable(align = 'l') %>% 
-  kable_styling(bootstrap_options = c("condesed", "striped")) %>% 
-  pack_rows("Shot Types", 1, n_shot_types) %>%
-  pack_rows("Shot Locations", (n_shot_types+1), (n_shot_loc + n_shot_types))
+  kable(align = c('l', 'c', 'l', 'c'), 
+        col.names = c("Goal Shot Type", "N", "Goal Location", "N")) %>% 
+  kable_styling(bootstrap_options = c("condesed", "striped"),
+                font_size = custom_page_1_font) 
 
 
 ```
-
-
-### Field Type Effect
 
 ```{r}
 
-schedule %>% 
-  group_by(
-    Venue
+scores %>% 
+  filter(Action == "Assist") %>% 
+  group_by(`Pass Type`) %>% 
+  summarise(n = n()) %>% 
+  arrange(-n) %>% 
+  rename(
+    Type = `Pass Type`
   ) %>% 
-  summarise(
-    Games = n(), 
-    For = sum(our_goals), 
-    Against = sum(our_conceded)
+  mutate(id = seq(from = 1, to = nrow(.), by = 1))-> pass_types
+
+n_shot_types <- nrow(pass_types)
+
+scores %>% 
+  filter(Action == "Assist") %>% 
+  group_by(`Position`) %>% 
+  summarise(n = n()) %>% 
+  arrange(-n) %>% 
+  rename(
+    Type = `Position`
   ) %>% 
-  
-  kable(align = c('l', 'c', 'c', 'c')) %>% 
-  kable_styling(
-    bootstrap_options = c("condensed", "striped")
-  )
+  mutate(id = seq(from = 1, to = nrow(.), by = 1)) -> pass_loc
+
+n_shot_loc <- nrow(pass_loc)
+
+shot_sum <- merge(pass_types, pass_loc, by = "id", all = T) %>% select(-id)
+
+shot_sum <- 
+  shot_sum %>% 
+  mutate_all(as.character)
+
+shot_sum <- 
+  shot_sum %>% 
+    mutate_all(~replace(., is.na(.), ""))
+
+shot_sum %>% 
+  kable(align = c('l', 'c', 'l', 'c'),  
+        col.names = c("Assist Pass Type", "N", "Assist Location", "N")) %>% 
+  kable_styling(bootstrap_options = c("condesed", "striped"),
+                font_size = custom_page_1_font) 
 
 ```
 
-Individual Performance
+Individual Performance 
 ===
 
-Row
+Column
 ---
+
+### Personal Goal Ccontributions
 
 ```{r}
 
@@ -539,21 +596,13 @@ scores %>%
   summarise(Assists = n()) %>% 
   arrange(-Assists) -> ast
 
-```
-
-```{r}
-
 scores %>% 
   filter(Action == "Goal") %>% 
   group_by(Player) %>% 
   summarise(Goals = n()) %>% 
   arrange(-Goals) -> gls
 
-```
-
-```{R}
-
-merge(ast, gls, all = T, by = "Player") -> all_
+merge(gls, ast, all = T, by = "Player") -> all_
 
 all_$Assists <- ifelse(is.na(all_$Assists), 0, all_$Assists)
 all_$Goals <- ifelse(is.na(all_$Goals), 0, all_$Goals)
@@ -566,10 +615,14 @@ all_ %>%
   kable_styling(bootstrap_options = c("striped", "condensed"))
 ```
 
-Row
+Column 
 ---
 
-```{r}
+### Assists Details
+
+#### Assist Destinations 
+
+```{r }
 
 linkups <- 
   scores %>% filter(Action == "Goal") %>% 
@@ -603,33 +656,75 @@ linkups %>%
   
   arrange(-total_assist , Assister) -> advanced_assist_tally
 
-advanced_assist_tally
-```
-
-```{r}
+advanced_assist_tally <- 
+  advanced_assist_tally %>% 
+  
+  mutate(
+    p_total = paste0(round(person_assists / total_assist, 2) * 100, "%")
+  )
 
 advanced_assist_tally %>% 
-  rowwise() %>%
-  mutate(new_column = paste(sort(unique(c(Assister, Scorer))), collapse = " and ")) %>% 
-  group_by(new_column) %>% 
-  summarise(total = sum(person_assists)) %>% 
-  arrange(-total)  
-
+  kable(align = 'c', 
+        col.names = c(
+          "Assist Creator", "Assister Total", 
+          "Assist Recipient", "Assists to Scorer", "% of Assister Total"
+        )) %>% 
+  kable_styling(bootstrap_options = c("striped", "condensed"))
 ```
+
+#### Assist-less Goals
 
 ```{R}
 
 assistless <- 
+  
   linkups %>% filter(is.na(Assister) ) %>% 
   group_by(
     Scorer
   ) %>% 
-  summarize(n = n()) %>% 
-  arrange(-n)
+  summarize(Goal = n()) %>% 
+  rename(Player = Scorer) %>% 
+  arrange(-Goal) %>% 
+  merge(gls, by = "Player") %>% 
   
-assistless
+  mutate(
+    p_total = paste0(round(Goal / Goals, 2) * 100, "%")
+  ) %>% 
+  
+  select(-Goals)
+
+assistless %>% 
+  kable(align = 'c', 
+        col.names = c(
+          "Player", "Assist-less Goals", "% Of Total Goals"
+        )) %>% 
+  kable_styling(bootstrap_options = c("striped", "condensed"))
+
 ```
 
+Column 
+---
 
+### Dynamic Duos
 
+* Players in a Duo assist each other for goals
 
+* A total is sourced from a table in `Assist Destinations` table 
+
+```{r}
+
+advanced_assist_tally %>% 
+  
+  rowwise() %>%
+  mutate(new_column = paste(sort(unique(c(Assister, Scorer))), collapse = " and ")) %>% 
+  group_by(new_column) %>% 
+  summarise(total = sum(person_assists)) %>% 
+  arrange(-total)  %>% 
+  
+  kable(align = 'c', 
+        col.names = c(
+          "Players in Duo", "Total Goals Scored "
+        )) %>% 
+  kable_styling(bootstrap_options = c("striped", "condensed"))
+
+```
