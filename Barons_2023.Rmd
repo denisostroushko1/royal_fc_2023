@@ -6,19 +6,27 @@ output:
     social: menu
     vertical_layout: fill
     css: special_style.css
-    theme:
-      version: 4
-      navbar-bg: "#ff0d00"
-      primary: "#ff0d00"
-      bg: "#101010"
-      fg: "#FDF7F7" 
+
 
       
 ---
 
 <!--------------------------------------------------------------------------------------
                                   SET UP: PACKAGES, FUCNTIONS, DATA LAOD 
+                                  
+theme:
+      version: 4
+      navbar-bg: "#ff0d00"
+      primary: "#ff0d00"
+      bg: "#101010"
+      fg: "#FDF7F7" 
 ------------------------------------------------------------------------------------> 
+
+```{css, echo=FALSE}
+.fluid-row {
+  font-size: 5.9vw;
+}
+```
 
 ```{r}
 knitr::opts_chunk$set(
@@ -28,9 +36,10 @@ knitr::opts_chunk$set(
 
 ```{r packages }
 
+library(gridExtra)
 library(ggthemes, quietly = TRUE)
 library(htmltools, quietly = TRUE)
-library(tidyverse)
+require(tidyverse)
 library(plotly)
 library(flexdashboard)
 library(ggsoccer)
@@ -126,8 +135,10 @@ VALUE BOXES
 
 ```{R}
 
-Goals <- scores %>% filter(Action == "Goal") %>% nrow()
-Games <- schedule %>% filter(Division == "D4") %>% nrow()
+# Goals <- scores %>% filter(Action == "Goal") %>% nrow()
+
+Goals <- schedule %>% select(our_goals) %>% sum() %>% unlist()
+Games <- schedule %>% filter(Division == "D4") %>% nrow() 
 
 val <- 
   round(Goals / Games , 2)
@@ -163,12 +174,12 @@ cap <- paste0("Allowed Goals Per Game <br/>", Goals, " goals in ", Games, " game
 flexdashboard::valueBox(value = val, caption = cap, color = "red", icon = 'fa-hand-paper')
 ```
 
-Column {data-width=450 }
+Column { .tabset data-width=450}
 ---
 
-### Goals Origin By Position
+### Goals
 
-```{r ,fig.width=10}
+```{r }
 
 scores %>% 
   filter(Action == "Goal") %>% 
@@ -180,8 +191,8 @@ scores %>%
 
 goals <- goals %>% arrange(`Group`)
 
-goals$y_lab = c(25, 50,75)
-goals$x_lab = c(15, 50,85)
+goals$y_lab = c(25,50,75)
+goals$x_lab = c(15,50,85)
 
 goals$label = with(goals, paste0(n, " (", round(p, 4)*100, "%)"
                                      )
@@ -194,6 +205,7 @@ ggplot(data = goals,
   theme_pitch(aspect_ratio = NULL) + 
   geom_point(color = "white") + 
   geom_text(size=12) + 
+  theme(title = element_text(size = 20)) + 
   
   geom_segment(
     x = 67, xend = 67, 
@@ -245,12 +257,68 @@ ggplot(data = goals,
     colour = "#7fb550" # Also accepts "red", "blue' etc
   ) + 
   
-  theme(text = element_text(size = 20))
+  theme(text = element_text(size = 20)) + 
+  ggtitle(
+    "Positional Origin of Goals: Defenders | Midfielders | Attackers"
+  ) -> g1 
 ```
 
-### Assists origin By Position
+```{r}
 
-```{r,fig.width=10}
+scores %>% 
+  filter(Action == "Goal") %>% 
+  group_by(`Position`, `Group`) %>% 
+  summarize(n = n(), 
+            p = n()/nrow(.)) %>% 
+  ungroup() %>% 
+  arrange(n) %>% 
+  mutate(id = seq(from = 1, to = nrow(.), by = 1), 
+         row_descr = 
+           paste0(
+             Group, " from \n ", Position
+           ), 
+         row_descr2 = 
+           factor(
+             paste0(
+               Group, " from \n ", Position
+             ), 
+             levels = 
+               paste0(
+                 Group, " from \n ", Position
+               )
+           )
+         ) -> goals
+
+
+ggplot(data = goals, aes(x = row_descr2, y = n)) + 
+  geom_col(
+    color = "grey", fill = "red"
+  ) + 
+  
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 20)) + 
+  
+  scale_y_continuous(
+    breaks = seq(from = min(goals$n), to = max(goals$n), by = 2)
+  ) + 
+  ylab("Number of Goals") +
+  
+  xlab("") + 
+  
+  ggtitle("Distribution of Goals by Location and Position") -> g2
+
+```
+
+```{r,fig.width=10, fig.height=12}
+
+grid.arrange(g1, g2, nrow = 2)
+
+```
+
+### Assists
+
+```{r}
 scores %>% 
   filter(Action == "Assist") %>% 
   group_by(`Group`) %>% 
@@ -275,6 +343,7 @@ ggplot(data = assists2,
   theme_pitch(aspect_ratio = NULL) + 
   geom_point(color = "white") + 
   geom_text(size=12) + 
+  theme(title = element_text(size = 20)) + 
   
   geom_segment(
     x = 67, xend = 67, 
@@ -324,12 +393,13 @@ ggplot(data = assists2,
     size = 1, 
     arrow = arrow(length = unit(0.1, "inches")),
     colour = "#7fb550" # Also accepts "red", "blue' etc
-  )
+  ) + 
+  ggtitle(
+    "Positional Origin of Assists: \n  Defenders | Midfielders | Attackers"
+  ) -> a1
 ```
 
-### Assists Origin By Direction
-
-```{r,fig.width=10}
+```{r}
 scores %>% 
   filter(Action == "Assist") %>% 
   group_by(`Field Part`) %>% 
@@ -354,6 +424,7 @@ ggplot(data = assists,
   theme_pitch(aspect_ratio = NULL) + 
   geom_point(color = "white") + 
   geom_text(size=12) + 
+  theme(title = element_text(size = 20)) + 
   
   geom_segment(
     x = 30, xend = 89, 
@@ -375,7 +446,16 @@ ggplot(data = assists,
     size = 2, 
     arrow = arrow(length = unit(0.3, "inches")),
     colour = "blue" # Also accepts "red", "blue' etc
-  )
+  ) + 
+  ggtitle(
+    "Directional Origin of Assists: \n Left Side (Top) - Middle | Right Side (Bottom)"
+  ) -> a2
+```
+
+```{r,fig.width=10, fig.height=12}
+
+grid.arrange(a1, a2, nrow = 2)
+
 ```
 
 Column {data-width=400}
@@ -392,7 +472,6 @@ schedule %>%
     
     differential = goals_for - goals_against
   ) %>% 
-
   select(game, Date, goals_for, goals_against, differential, opponent) %>% 
   
   pivot_longer(
@@ -491,13 +570,14 @@ schedule %>%
 
 ```
 
-Row {data-width=250}
+Row {data-width=250 .tabset}
 -------------------------------------
 
-### Goals and Assist Details 
+### Goals Details 
 
 ```{r}
 custom_page_1_font = 13
+col_title_font = 11
 ```
 
 ```{r }
@@ -538,12 +618,19 @@ shot_sum <-
 
 shot_sum %>% 
   kable(align = c('l', 'c', 'l', 'c'), 
-        col.names = c("Goal Shot Type", "N", "Goal Location", "N")) %>% 
+        col.names = c("Shot Type", "Number of Goals", "Shot Location", "Number of Goals")) %>% 
   kable_styling(bootstrap_options = c("condesed", "striped"),
-                font_size = custom_page_1_font) 
+                font_size = custom_page_1_font) %>% 
+  column_spec(
+    2, 
+    border_right = T
+    ) %>% 
+  row_spec(0, font_size = col_title_font)
 
 
 ```
+
+### Assists Details 
 
 ```{r}
 
@@ -583,9 +670,14 @@ shot_sum <-
 
 shot_sum %>% 
   kable(align = c('l', 'c', 'l', 'c'),  
-        col.names = c("Assist Pass Type", "N", "Assist Location", "N")) %>% 
+        col.names = c("Assist Type", "Number of Ast.", "Assist Location", "Number of Ast.")) %>% 
   kable_styling(bootstrap_options = c("condesed", "striped"),
-                font_size = custom_page_1_font) 
+                font_size = custom_page_1_font)  %>% 
+  column_spec(
+    2, 
+    border_right = T
+    ) %>% 
+  row_spec(0, font_size = col_title_font)
 
 ```
 
