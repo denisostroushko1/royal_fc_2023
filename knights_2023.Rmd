@@ -126,6 +126,8 @@ VALUE BOXES
 ```{R}
 
 Goals <- scores %>% filter(Action == "Goal") %>% nrow()
+Goals_total = Goals
+
 Games <- schedule %>% filter(Division == "D2") %>% nrow()
 
 val <- 
@@ -160,6 +162,15 @@ val <-
 cap <- paste0("Allowed Goals Per Game <br/>", Goals, " goals in ", Games, " games")
 
 flexdashboard::valueBox(value = val, caption = cap, color = "red", icon = 'fa-hand-paper')
+```
+
+### Box
+
+```{R}
+
+cap <- paste0("Goals Due to Galacticos Forfeit")
+
+flexdashboard::valueBox(value = 3, caption = cap, color = "orange", icon = 'fa-gear')
 ```
 
 Column { .tabset data-width=450}
@@ -696,7 +707,11 @@ all_$Assists <- ifelse(is.na(all_$Assists), 0, all_$Assists)
 all_$Goals <- ifelse(is.na(all_$Goals), 0, all_$Goals)
 all_$`Goals + Assists` <- all_$Assists + all_$Goals
 
-all_ <- all_ %>% arrange(-`Goals + Assists`, -Goals, -Assists, Player)
+all_$`% Team's Goals` = paste0(round(all_$Goals/Goals_total,2)*100, "%")
+
+all_ <- 
+  all_ %>% arrange(-`Goals + Assists`, -Goals, -Assists, Player) %>% 
+  select(Player, `Goals`, `% Team's Goals`, Assists, `Goals + Assists`)
 
 all_ %>% 
   kable(align = 'c') %>% 
@@ -776,7 +791,7 @@ assistless <-
   merge(gls, by = "Player") %>% 
   
   mutate(
-    p_total = paste0(round(Goal / Goals, 2) * 100, "%")
+    p_total = paste0(round(Goal / Goals_total, 2) * 100, "%")
   ) %>% 
   
   select(-Goals)
@@ -801,6 +816,8 @@ Column
 
 ```{r}
 
+# variable `Goals_total` was taken from the beginning of the file. Created for th first Value Box 
+
 advanced_assist_tally %>% 
   
   rowwise() %>%
@@ -808,10 +825,11 @@ advanced_assist_tally %>%
   group_by(new_column) %>% 
   summarise(total = sum(person_assists)) %>% 
   arrange(-total)  %>% 
+  mutate(p_total  = paste0(round(total/Goals_total,2) * 100 , "%")) %>% 
   
   kable(align = 'c', 
         col.names = c(
-          "Players in Duo", "Total Goals Scored "
+          "Players in Duo", "Total Goals Scored ", "% of Team's Goals"
         )) %>% 
   kable_styling(bootstrap_options = c("striped", "condensed"))
 
