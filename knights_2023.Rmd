@@ -460,9 +460,9 @@ grid.arrange(a1, a2, nrow = 2)
 Column {data-width=400}
 ---
 
-### Goal Differential Through the Season
+### Goal Differential Through the Season (Including Forfeited Games)
 
-```{r differential over timeline }
+```{r differential over timeline, fig.height=5 }
 
 schedule %>% 
   mutate(
@@ -514,8 +514,8 @@ plot_df %>%
       title = "Goals For and Against"
     ), 
     xaxis = list(
-      title = "Game #"
-    ), 
+      title =   "Game #"
+    ),
     legend = list(
       orientation = "h", y = -.5
       )
@@ -524,9 +524,9 @@ plot_df %>%
 
 ```
 
-### Goal Differential Distribution By Game
+### Goal Differential Distribution By Game (Excluding Forfeited Games)
 
-```{r , fig.width=8, fig.height=7}
+```{r , fig.width=8, fig.height=6.5}
 
 schedule %>% 
   mutate(
