@@ -39,6 +39,8 @@ library(kableExtra)
 library(shinydashboard)
 library(scales)
 library(fontawesome)
+library(DT)
+library(data.table)
 
 ```
 
@@ -799,7 +801,7 @@ assistless <-
 assistless %>% 
   kable(align = 'c', 
         col.names = c(
-          "Player", "Assist-less Goals", "% Of Total Goals"
+          "Player", "Assist-less Goals", "% Of Team's Total"
         )) %>% 
   kable_styling(bootstrap_options = c("striped", "condensed"))
 
@@ -832,5 +834,21 @@ advanced_assist_tally %>%
           "Players in Duo", "Total Goals Scored ", "% of Team's Goals"
         )) %>% 
   kable_styling(bootstrap_options = c("striped", "condensed"))
+
+```
+
+All Goals Data 
+===
+
+```{r}
+
+datatable(
+  scores %>% 
+    mutate(Date = as.Date(Date)) %>% 
+    select(-`Game Half`, -`Season Half`, - `Group`)
+  ,
+  options = list("pageLength" = 25), 
+  rownames = FALSE
+  )
 
 ```
