@@ -6,6 +6,6 @@ server: rpubs.com
 hostUrl: rpubs.com
 appId: https://api.rpubs.com/api/v1/document/1066683/d9e748f059574f999f8429768ff3b382
 bundleId: https://api.rpubs.com/api/v1/document/1066683/d9e748f059574f999f8429768ff3b382
-url: http://rpubs.com/publish/claim/1066683/bebde3ead205496e8a135fbd02544f05
-when: 1690474728.48401
-lastSyncTime: 1690474728.48403
+url: http://rpubs.com/kexite/1066683
+when: 1690516887.68262
+lastSyncTime: 1690516887.68264

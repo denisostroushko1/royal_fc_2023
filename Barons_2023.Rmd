@@ -49,6 +49,8 @@ library(kableExtra)
 library(shinydashboard)
 library(scales)
 library(fontawesome)
+library(DT)
+library(data.table)
 
 ```
 
@@ -829,3 +831,20 @@ advanced_assist_tally %>%
   kable_styling(bootstrap_options = c("striped", "condensed"))
 
 ```
+
+All Goals Data 
+===
+
+```{r}
+
+datatable(
+  scores %>% 
+    mutate(Date = as.Date(Date)) %>% 
+    select(-`Game Half`, -`Season Half`, - `Group`)
+  ,
+  options = list("pageLength" = 25), 
+  rownames = FALSE
+  )
+
+```
+
