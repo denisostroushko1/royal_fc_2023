@@ -97,6 +97,8 @@ schedule$`Home Score` <- as.numeric(schedule$`Home Score`)
 schedule$`Away Score` = with(schedule, substr(`Final Score`, 4, 4))
 schedule$`Away Score` <- as.numeric(schedule$`Away Score`)
 
+schedule[schedule$Home == "Sonajita", ]$`Away Score`  <- 10
+
 schedule$our_goals = 
   with(schedule, 
        case_when(
@@ -174,6 +176,16 @@ val <-
 cap <- paste0("Allowed Goals Per Game <br/>", Goals, " goals in ", Games, " games")
 
 flexdashboard::valueBox(value = val, caption = cap, color = "red", icon = 'fa-hand-paper')
+```
+
+
+### Box
+
+```{R}
+
+cap <- paste0("Goals Due to Sonajita's Forfeit")
+
+flexdashboard::valueBox(value = 10, caption = cap, color = "orange", icon = 'fa-gear')
 ```
 
 Column { .tabset data-width=450}
