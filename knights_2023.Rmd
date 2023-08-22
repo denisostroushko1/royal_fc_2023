@@ -766,13 +766,15 @@ advanced_assist_tally <-
   
   mutate(
     p_total = paste0(round(person_assists / total_assist, 2) * 100, "%")
-  )
+  ) %>% 
+  
+  arrange(-total_assist, -person_assists)
 
 advanced_assist_tally %>% 
   kable(align = 'c', 
         col.names = c(
-          "Assist Creator", "Assister Total", 
-          "Assist Recipient", "Assists to Scorer", "% of Assister Total"
+          "Assist Creator", "Total Assists Given", 
+          "Assist Recipient", "Assists to Recipient", "% of Assist Creator Total"
         )) %>% 
   kable_styling(bootstrap_options = c("striped", "condensed"))
 ```
