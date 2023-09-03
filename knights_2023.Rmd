@@ -41,6 +41,8 @@ library(scales)
 library(fontawesome)
 library(DT)
 library(data.table)
+library(rsconnect)
+library(curl)
 
 ```
 
@@ -449,7 +451,7 @@ ggplot(data = assists,
     colour = "blue" # Also accepts "red", "blue' etc
   ) + 
   ggtitle(
-    "Directional Origin of Assists: \n Left Side (Top) - Middle | Right Side (Bottom)"
+    "Directional Origin of Assists: \n Left Side (Top) | Middle | Right Side (Bottom)"
   ) -> a2
 ```
 
